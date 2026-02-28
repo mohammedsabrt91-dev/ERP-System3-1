@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>نظام إدارة المنتجات | محمد صبري</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+<!-- ربط ملف التنسيق الخارجي -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="loginPage">
+    <div class="login-container" id="loginContainer"></div>
+</div>
+<div id="mainApp">
+    <div class="menu">
+        <ul>
+            <li class="profile">
+                <div class="img-box">
+                    <img id="menuProfileImg" src="" alt="الملف الشخصي" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>'" />
+                </div>
+                <h2 id="menuUsername">مستخدم</h2>
+            </li>
+            <li><a href="#" class="active" data-section="dashboard"><i class="fas fa-home"></i><p>الشاشة الرئيسية</p></a></li>
+            <li><a href="#" data-section="treasury"><i class="fas fa-wallet"></i><p>الخزينة الرئيسية</p></a></li>
+            <li><a href="#" data-section="purchases"><i class="fas fa-truck"></i><p>المشتريات</p></a></li>
+            <li><a href="#" data-section="sales"><i class="fas fa-shopping-cart"></i><p>المبيعات</p></a></li>
+            <li><a href="#" data-section="inventory"><i class="fas fa-boxes"></i><p>المخزون</p></a></li>
+            <li><a href="#" data-section="employees"><i class="fas fa-user-tie"></i><p>إدارة الموارد البشرية</p></a></li>
+            <li><a href="#" data-section="attendance"><i class="fas fa-calendar-check"></i><p>الحضور والغياب</p></a></li>
+            <li><a href="#" data-section="settings"><i class="fas fa-cog"></i><p>الإعدادات</p></a></li>
+            <li class="log-out"><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><p>تسجيل الخروج</p></a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <div id="dashboard" class="section active">
+            <div class="title-info"><p> شاشة الرئيسية</p><i class="fas fa-chart-pie"></i></div>
+            <div class="data-info">
+                <div class="box treasury-box"><i class="fas fa-wallet"></i><div class="data"><p>رصيد الخزينة</p><span id="dashTreasury">0.00</span></div></div>
+                <div class="box success-box"><i class="fas fa-shopping-cart"></i><div class="data"><p>المبيعات</p><span id="totalSales">0.00</span></div></div>
+                <div class="box"><i class="fas fa-boxes"></i><div class="data"><p>تكلفة البضاعة المباعة</p><span id="cogs">0.00</span></div></div>
+                <div class="box danger-box"><i class="fas fa-truck"></i><div class="data"><p>المشتريات</p><span id="totalPurchases">0.00</span></div></div>
+                <div class="box treasury-box"><i class="fas fa-coins"></i><div class="data"><p>المصاريف</p><span id="totalExpenses">0.00</span></div></div>
+                <div class="box success-box"><i class="fas fa-chart-line"></i><div class="data"><p>مجمل الربح</p><span id="grossProfit">0.00</span></div></div>
+                <div class="box success-box"><i class="fas fa-hand-holding-usd"></i><div class="data"><p>صافي الربح</p><span id="netProfit">0.00</span></div></div>
+            </div>
+            <div class="charts-container">
+                <div class="chart-box"><canvas id="mainStatsBarChart"></canvas></div>
+                <div class="chart-box"><canvas id="mainStatsDoughnutChart"></canvas></div>
+            </div>
+        </div>
+        <!-- ✅ المشتريات -->
+        <div id="purchases" class="section">
+            <div class="title-info"><p>إدارة المشتريات</p><i class="fas fa-truck"></i></div>
+            <div class="sub-tabs no-print">
+                <button class="sub-tab active" onclick="switchTab('purchases', 'new')">فاتورة مشتريات</button>
+                <button class="sub-tab" onclick="switchTab('purchases', 'list')">سجل المشتريات</button>
+                <button class="sub-tab" onclick="switchTab('purchases', 'returns')">مردودات المشتريات</button>
+            </div>
+            <div id="purchases-new" class="sub-content active">
+                <div class="form-container no-print">
+                    <h3><i class="fas fa-file-invoice"></i> فاتورة مشتريات جديدة</h3>
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" id="purchaseSupplierName" placeholder="اسم المورد" /></div>
+                        <div class="form-group"><input type="text" id="purchaseSupplierPhone" placeholder="رقم هاتف المورد" /></div>
+                        <div class="form-group"><input type="date" id="purchaseInvoiceDate" /></div>
+                    </div>
+                    <div style="background: rgba(14, 165, 233, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid rgba(14, 165, 233, 0.3);">
+                        <h4 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-list"></i> منتجات الفاتورة</h4>
+                        <div class="form-row">
+                            <div class="form-group"><input type="text" id="newPurchaseProductCode" placeholder="كود المنتج" /></div>
+                            <div class="form-group"><input type="text" id="newPurchaseProductName" placeholder="اسم المنتج" /></div>
+                            <div class="form-group"><input type="text" id="newPurchaseUnit" placeholder="الوحدة" /></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><input type="number" step="0.01" id="newPurchasePrice" placeholder="سعر الشراء" /></div>
+                            <div class="form-group"><input type="number" step="0.01" id="newPurchaseSalePrice" placeholder="سعر البيع" /></div>
+                            <div class="form-group"><input type="number" step="0.01" id="newPurchaseQuantity" placeholder="الكمية" /></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><input type="text" id="newPurchaseCategory" placeholder="الفئة" /></div>
+                            <div class="form-group" style="display:flex; align-items:flex-end;">
+                                <button type="button" class="add-item-btn" onclick="addPurchaseItem()"><i class="fas fa-plus"></i> إضافة منتج</button>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="invoice-items-table">
+                        <thead><tr><th>الكود</th><th>المنتج</th><th>الوحدة</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>القيمة</th><th>حذف</th></tr></thead>
+                        <tbody id="purchaseItemsList"></tbody>
+                    </table>
+                    <div style="background: rgba(245, 158, 11, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 18px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                        <small style="color: var(--treasury);"><i class="fas fa-info-circle"></i> إجمالي الفاتورة: <span id="purTotalPreview" style="font-weight:bold;">0.00</span> جنيه</small>
+                    </div>
+                    <button id="createPurchaseBtn"><i class="fas fa-save"></i> حفظ  </button>
+                </div>
+            </div>
+            <div id="purchases-list" class="sub-content">
+                <table id="purchasesTable">
+                    <thead><tr><th>#</th><th>الكود</th><th>المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>القيمة</th><th>المورد</th><th>الهاتف</th><th>التاريخ</th></tr></thead>
+                    <tbody id="purchasesList"></tbody>
+                </table>
+            </div>
+            <div id="purchases-returns" class="sub-content">
+                <div class="form-container no-print">
+                    <h3><i class="fas fa-undo"></i> مردودات المشتريات</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>اختر المنتج من المخزن</label>
+                            <select id="returnPurchaseProductSelect" onchange="onPurchaseReturnProductChange()">
+                                <option value="">-- اختر منتج --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><input type="number" id="returnPurchasePrice" placeholder="سعر الشراء" step="0.01" /></div>
+                        <div class="form-group"><input type="number" id="returnPurchaseQuantity" placeholder="الكمية المرتجعة" step="0.01" oninput="calculatePurchaseReturnTotal()" /></div>
+                    </div>
+                    <div id="purchaseReturnTotalBox" style="display:none; background: rgba(34, 197, 94, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 18px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <small style="color: var(--success);"><i class="fas fa-check-circle"></i> سيتم إضافة قيمة المرتجع للخزينة: <span id="purchaseReturnTotalAmount" style="font-weight:bold; font-size:16px;">0.00</span> جنيه</small>
+                    </div>
+                    <button id="savePurchaseReturnBtn" class="btn-treasury"><i class="fas fa-save"></i> حفظ </button>
+                </div>
+                <table id="purchaseReturnsTable">
+                    <thead><tr><th>#</th><th>المنتج</th><th>الكود</th><th>الوحدة</th><th>سعر الشراء</th><th>الكمية</th><th>التاريخ</th></tr></thead>
+                    <tbody id="purchaseReturnsList"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- ✅ المبيعات -->
+        <div id="sales" class="section">
+            <div class="title-info"><p>إدارة المبيعات</p><i class="fas fa-shopping-cart"></i></div>
+            <div class="sub-tabs no-print">
+                <button class="sub-tab active" onclick="switchTab('sales', 'new')">فاتورة بيع</button>
+                <button class="sub-tab" onclick="switchTab('sales', 'list')">سجل المبيعات</button>
+                <button class="sub-tab" onclick="switchTab('sales', 'returns')">مردودات المبيعات</button>
+            </div>
+            <div id="sales-new" class="sub-content active">
+                <div class="form-container no-print">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> فاتورة بيع جديدة</h3>
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" id="invoiceCustomerName" placeholder="اسم العميل" /></div>
+                        <div class="form-group"><input type="text" id="invoiceCustomerPhone" placeholder="رقم الهاتف" /></div>
+                        <div class="form-group"><input type="date" id="invoiceDate" /></div>
+                    </div>
+                    <div style="background: rgba(14, 165, 233, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid rgba(14, 165, 233, 0.3);">
+                        <h4 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-list"></i> منتجات الفاتورة</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>اختر منتج من المخزن</label>
+                                <select id="saleProductSelect" onchange="onSaleProductChange()">
+                                    <option value="">-- اختر منتج --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><input type="text" id="invoiceProductCodeDisplay" placeholder="كود المنتج" readonly /></div>
+                            <div class="form-group"><input type="number" id="invoiceSalePrice" placeholder="سعر البيع" step="0.01" /></div>
+                            <div class="form-group"><input type="number" id="invoiceQuantity" placeholder="الكمية" step="0.01" value="1" /></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="display:flex; align-items:flex-end;">
+                                <button type="button" class="add-item-btn" onclick="addSaleItem()"><i class="fas fa-plus"></i> إضافة منتج</button>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="invoice-items-table">
+                        <thead><tr><th>الكود</th><th>المنتج</th><th>الوحدة</th><th>سعر البيع</th><th>الكمية</th><th>القيمة</th><th>التكلفة</th><th>حذف</th></tr></thead>
+                        <tbody id="saleItemsList"></tbody>
+                    </table>
+                    <div style="background: rgba(34, 197, 94, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 18px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <small style="color: var(--success);"><i class="fas fa-check-circle"></i> إجمالي الفاتورة: <span id="saleTotalPreview" style="font-weight:bold;">0.00</span> جنيه</small>
+                    </div>
+                    <button id="saveInvoiceBtn" class="btn-success"><i class="fas fa-save"></i> حفظ </button>
+                </div>
+            </div>
+            <div id="sales-list" class="sub-content">
+                <table id="salesTable">
+                    <thead><tr><th>#</th><th>الكود</th><th>المنتج</th><th>العميل</th><th>الهاتف</th><th>الكمية</th><th>الإجمالي</th><th>التاريخ</th></tr></thead>
+                    <tbody id="salesList"></tbody>
+                </table>
+            </div>
+            <div id="sales-returns" class="sub-content">
+                <div class="form-container no-print">
+                    <h3><i class="fas fa-undo-alt"></i> مردودات المبيعات</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>اختر منتج من المبيعات السابقة</label>
+                            <select id="returnSaleProductSelect" onchange="onSaleReturnProductChange()">
+                                <option value="">-- اختر منتج --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><input type="number" id="returnSalePrice" placeholder="سعر البيع" step="0.01" /></div>
+                        <div class="form-group"><input type="number" id="returnSaleQuantity" placeholder="الكمية المرتجعة" step="0.01" oninput="calculateSaleReturnTotal()" /></div>
+                    </div>
+                    <div id="saleReturnTotalBox" style="display:none;" class="return-warning-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>سيتم خصم قيمة المرتجع من الخزينة: <span class="amount" id="saleReturnTotalAmount">0.00</span> جنيه</span>
+                    </div>
+                    <button id="saveSalesReturnBtn" class="btn-danger"><i class="fas fa-save"></i> حفظ </button>
+                </div>
+                <table id="salesReturnsTable">
+                    <thead><tr><th>#</th><th>المنتج</th><th>الكود</th><th>الوحدة</th><th>سعر البيع</th><th>الكمية</th><th>التاريخ</th></tr></thead>
+                    <tbody id="salesReturnsList"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- ✅ الخزينة -->
+        <div id="treasury" class="section">
+            <div class="title-info"><p>الخزينة الرئيسية</p><i class="fas fa-wallet"></i></div>
+            <div class="treasury-balance-card">
+                <div class="balance-content">
+                    <h3><i class="fas fa-coins"></i> الرصيد المتاح</h3>
+                    <div class="balance-amount" id="treasuryBalanceBig">0.00</div>
+                    <div class="balance-label">جنيه مصري</div>
+                </div>
+            </div>
+            <div class="treasury-stats">
+                <div class="treasury-stat-card income-stat"><i class="fas fa-arrow-down"></i><p>إجمالي الوارد</p><span id="treasuryIncome">0.00</span></div>
+                <div class="treasury-stat-card expense-stat"><i class="fas fa-arrow-up"></i><p>إجمالي الصادر</p><span id="treasuryExpense">0.00</span></div>
+            </div>
+            <div class="treasury-actions no-print">
+                <button class="treasury-action-btn income-btn" onclick="openIncomeModal()"><i class="fas fa-plus-circle"></i><span>إضافة وارد</span><small>إيداع للخزينة</small></button>
+                <button class="treasury-action-btn expense-btn" onclick="openExpenseModal()"><i class="fas fa-minus-circle"></i><span>صرف صادر</span><small>سحب من الخزينة</small></button>
+            </div>
+            <div class="form-container"><h3><i class="fas fa-history"></i> سجل الحركات</h3></div>
+            <div class="treasury-card-container">
+                <div class="treasury-table-wrapper">
+                    <table>
+                        <thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>التصنيف</th><th>المسلم</th><th>المستلم</th><th>المبلغ</th><th>الرصيد</th></tr></thead>
+                        <tbody id="treasuryLog"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- ✅ المخزون -->
+        <div id="inventory" class="section">
+            <div class="title-info"><p>المخزون</p><i class="fas fa-boxes"></i></div>
+            <div style="overflow-x: auto;">
+                <table id="inventoryTable">
+                    <thead>
+                    <tr>
+                        <th>الكود</th>
+                        <th>الصنف</th>
+                        <th>الوحدة</th>
+                        <th>سعر الشراء</th>
+                        <th>سعر البيع</th>
+                        <th style="color: var(--income);">الوارد</th>
+                        <th style="color: var(--expense);">المنصرف</th>
+                        <th style="color: var(--success);">المتاح</th>
+                        <th style="color: var(--warning);">القيمة</th>
+                    </tr>
+                    </thead>
+                    <tbody id="inventoryList"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- ✅ الموظفين -->
+        <div id="employees" class="section">
+            <div class="title-info"><p>إدارة الموارد البشرية</p><i class="fas fa-user-tie"></i></div>
+            <div class="form-container no-print">
+                <h3 id="employeeFormTitle"><i class="fas fa-user-plus"></i> إضافة موظف</h3>
+                <div class="form-row">
+                    <div class="form-group"><input type="text" id="empName" placeholder="اسم الموظف" /></div>
+                    <div class="form-group"><input type="text" id="empNationalId" placeholder="الرقم القومي" /></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><input type="text" id="empPhone" placeholder="رقم الهاتف" /></div>
+                    <div class="form-group"><input type="text" id="empJob" placeholder="الوظيفة" /></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><input type="number" step="0.01" id="empSalary" placeholder="المرتب الأساسي" /></div>
+                    <div class="form-group"><input type="number" step="0.01" id="empIncentives" placeholder="الحوافز" /></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><input type="number" step="0.01" id="empAllowances" placeholder="البدلات" /></div>
+                    <div class="form-group"><input type="number" step="0.01" id="empBonuses" placeholder="المكافآت" /></div>
+                </div>
+                <button id="saveEmployeeBtn"><i class="fas fa-save"></i> <span id="saveEmployeeBtnText">حفظ </span></button>
+                <button id="cancelEditBtn" class="btn-danger" style="display:none; margin-top:10px;"><i class="fas fa-times"></i> إلغاء التعديل</button>
+            </div>
+            <table id="employeesTable">
+                <thead><tr><th>#</th><th>الاسم</th><th>الرقم القومي</th><th>الهاتف</th><th>الوظيفة</th><th>المرتب الصافي</th><th>الإجراءات</th></tr></thead>
+                <tbody id="employeesList"></tbody>
+            </table>
+        </div>
+        <!-- ✅ الحضور والغياب -->
+        <div id="attendance" class="section">
+            <div class="title-info"><p>الحضور والغياب</p><i class="fas fa-calendar-check"></i></div>
+            <div class="att-controls no-print">
+                <div class="form-group"><label>السنة</label><input type="number" id="attYear" value="2024" /></div>
+                <div class="form-group"><label>الشهر</label>
+                    <select id="attMonth">
+                        <option value="0">يناير</option><option value="1">فبراير</option><option value="2">مارس</option>
+                        <option value="3">أبريل</option><option value="4">مايو</option><option value="5">يونيو</option>
+                        <option value="6">يوليو</option><option value="7">أغسطس</option><option value="8">سبتمبر</option>
+                        <option value="9">أكتوبر</option><option value="10">نوفمبر</option><option value="11">ديسمبر</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1; display:flex; align-items:flex-end;">
+                    <button id="loadAttendanceBtn" style="width:auto; padding:14px 25px;"><i class="fas fa-calendar-alt"></i> عرض الشهر</button>
+                </div>
+            </div>
+            <div class="att-table-container">
+                <table class="att-grid-table" id="attTable">
+                    <thead id="attHead"></thead>
+                    <tbody id="attBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- ✅ الإعدادات -->
+        <div id="settings" class="section">
+            <div class="title-info"><p>الإعدادات</p><i class="fas fa-cog"></i></div>
+            <div class="form-container" style="text-align:center;">
+                <p>المستخدم: <strong id="settingsUsername">-</strong></p>
+                <div class="profile-preview" style="margin:25px auto; width:120px; height:120px;">
+                    <img id="settingsProfileImg" src="" alt="الملف الشخصي" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>'" />
+                </div>
+                <div style="margin: 25px 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button id="exportDataBtn" class="btn-success" style="width:auto;"><i class="fas fa-file-export"></i> تصدير البيانات</button>
+                    <input type="file" id="importFile" accept=".json" multiple style="display:none;" />
+                    <button id="importDataBtn" style="width:auto;"><i class="fas fa-file-import"></i> استيراد البيانات</button>
+                </div>
+                <button id="clearDataBtn" class="btn-danger" style="width:auto;"><i class="fas fa-trash-alt"></i> مسح البيانات</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <button id="printCurrentBtn" class="btn-success" onclick="printCurrentSection()"><i class="fas fa-print"></i> طباعة التقرير</button>
+        <button id="sumByNameBtn"><i class="fas fa-search"></i> بحث بالاسم</button>
+        <button id="sumByCategoryBtn"><i class="fas fa-search"></i> بحث بالفئة</button>
+        <button id="inquiryBtn"><i class="fas fa-question-circle"></i> استعلام</button>
+    </div>
+</div>
+<!-- Modals -->
+<div id="incomeModal" class="treasury-modal">
+    <div class="modal-content income-modal">
+        <button class="close-modal" onclick="closeIncomeModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-icon income-icon"><i class="fas fa-arrow-down"></i></div>
+        <div class="modal-header income-header"><h2>إضافة وارد</h2><p>أدخل بيانات الإيداع</p></div>
+        <form class="modal-form" onsubmit="submitIncome(event)">
+            <div class="form-group"><label>المبلغ</label><input type="number" id="incomeAmount" class="amount-input income-input" placeholder="0.00" step="0.01" required /></div>
+            <div class="form-group"><label>البيان</label><input type="text" id="incomeDesc" placeholder="وصف العملية" required /></div>
+            <div class="form-group"><label>المسلم</label><input type="text" id="incomePayer" placeholder="من سلم المبلغ" /></div>
+            <div class="form-group"><label>المستلم</label><input type="text" id="incomeReceiver" placeholder="أمين الخزنة" /></div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-confirm-income"><i class="fas fa-check"></i> تأكيد</button>
+                <button type="button" class="btn-cancel" onclick="closeIncomeModal()">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="expenseModal" class="treasury-modal">
+    <div class="modal-content expense-modal">
+        <button class="close-modal" onclick="closeExpenseModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-icon expense-icon"><i class="fas fa-arrow-up"></i></div>
+        <div class="modal-header expense-header"><h2>صرف صادر</h2><p>أدخل بيانات السحب</p></div>
+        <form class="modal-form" onsubmit="submitExpense(event)">
+            <div class="form-group"><label>المبلغ</label><input type="number" id="expenseAmount" class="amount-input expense-input" placeholder="0.00" step="0.01" required /></div>
+            <div class="form-group"><label>البيان</label><input type="text" id="expenseDesc" placeholder="وصف العملية" required /></div>
+            <div class="form-group"><label>تصنيف الصرف</label>
+                <div class="expense-categories">
+                    <div class="expense-category"><input type="radio" name="expenseCategory" value="مصروفات تشغيل" id="expCat1" checked /><label for="expCat1">مصروفات تشغيل</label></div>
+                    <div class="expense-category"><input type="radio" name="expenseCategory" value="مصروفات إدارية" id="expCat2" /><label for="expCat2">مصروفات إدارية</label></div>
+                    <div class="expense-category"><input type="radio" name="expenseCategory" value="مرتبات" id="expCat3" /><label for="expCat3">مرتبات</label></div>
+                    <div class="expense-category"><input type="radio" name="expenseCategory" value="أخرى" id="expCat5" /><label for="expCat5">أخرى</label></div>
+                </div>
+            </div>
+            <div class="form-group"><label>المسلم</label><input type="text" id="expensePayer" placeholder="من سلم المبلغ" /></div>
+            <div class="form-group"><label>المستلم</label><input type="text" id="expenseReceiver" placeholder="المستفيد" /></div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-confirm-expense"><i class="fas fa-check"></i> تأكيد</button>
+                <button type="button" class="btn-cancel" onclick="closeExpenseModal()">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="inquiryModal" class="inquiry-modal">
+    <div class="inquiry-content">
+        <button class="close-modal" onclick="closeInquiryModal()"><i class="fas fa-times"></i></button>
+        <h3><i class="fas fa-search"></i> نظام الاستعلام الشامل</h3>
+        <div class="inquiry-options">
+            <div class="inquiry-option" onclick="showInquiryForm('employee')"><i class="fas fa-user-tie"></i><span>موظف</span></div>
+            <div class="inquiry-option" onclick="showInquiryForm('client')"><i class="fas fa-user"></i><span>عميل</span></div>
+            <div class="inquiry-option" onclick="showInquiryForm('product')"><i class="fas fa-box"></i><span>منتج</span></div>
+            <div class="inquiry-option" onclick="showInquiryForm('treasury')"><i class="fas fa-wallet"></i><span>خزينة</span></div>
+            <div class="inquiry-option" onclick="showInquiryForm('invoice')"><i class="fas fa-file-invoice"></i><span>فاتورة</span></div>
+        </div>
+        <div id="inquiryFormEmployee" class="inquiry-form">
+            <div class="form-group"><input type="text" id="inquiryEmpName" placeholder="اسم الموظف" /></div>
+            <div class="form-row">
+                <div class="form-group"><input type="number" id="inquiryEmpMonth" placeholder="رقم الشهر (1-12)" /></div>
+                <div class="form-group"><input type="number" id="inquiryEmpYear" placeholder="السنة" /></div>
+            </div>
+            <button onclick="executeEmployeeInquiry()"><i class="fas fa-search"></i> بحث</button>
+        </div>
+        <div id="inquiryFormClient" class="inquiry-form">
+            <div class="form-group"><input type="text" id="inquiryClientName" placeholder="اسم العميل" /></div>
+            <button onclick="executeClientInquiry()"><i class="fas fa-search"></i> بحث</button>
+        </div>
+        <div id="inquiryFormProduct" class="inquiry-form">
+            <div class="form-group"><input type="text" id="inquiryProductName" placeholder="اسم المنتج أو الكود" /></div>
+            <button onclick="executeProductInquiry()"><i class="fas fa-search"></i> بحث</button>
+        </div>
+        <div id="inquiryFormTreasury" class="inquiry-form active">
+            <button onclick="executeTreasuryInquiry()" style="margin-top:10px;"><i class="fas fa-search"></i> عرض كل بيانات الخزينة</button>
+        </div>
+        <div id="inquiryFormInvoice" class="inquiry-form">
+            <div class="form-group"><input type="text" id="inquiryInvoiceName" placeholder="اسم الفاتورة أو اسم العميل" /></div>
+            <button onclick="executeInvoiceInquiry()"><i class="fas fa-search"></i> بحث</button>
+        </div>
+        <div id="inquiryResult" class="inquiry-result"></div>
+    </div>
+</div>
+<div id="successMessage" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    <h3 id="successTitle">تمت العملية</h3>
+    <p id="successText">تم التسجيل بنجاح</p>
+    <div class="amount" id="successAmount">0.00 ج.م</div>
+    <p id="successBalance">الرصيد: 0.00 ج.م</p>
+</div>
+<!-- ربط ملف الجافاسكريبت الخارجي -->
+<script src="script.js"></script>
+</body>
+</html>
